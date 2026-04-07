@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { API } from "./api";
+import { PublicAPI } from "./api";
 import { useNavigate, Link } from "react-router-dom";
 import kadiImage from "./assets/kadi.jpeg";
 import flagIcon from "./assets/flag.png";
@@ -16,17 +16,18 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const resp = await API.post("/login/", form);
+      const resp = await PublicAPI.post("/login/", form);
       const token = resp.data.access;
       const payload = JSON.parse(atob(token.split(".")[1]));
 
       localStorage.setItem("token", token);
       localStorage.setItem("isAdmin", payload.is_staff ? "true" : "false");
+      localStorage.setItem("phone", form.phone);
 
       if (payload.is_staff) {
         setIsAdmin(true);
       } else {
-        navigate("/report");
+        navigate("/home");
       }
     } catch {
       setError("Invalid phone number or password.");

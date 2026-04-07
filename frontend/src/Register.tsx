@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { API } from "./api";
+import { API, PublicAPI } from "./api";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
@@ -15,7 +15,7 @@ export default function Register() {
     setSuccess("");
     setLoading(true);
     try {
-      await API.post("/users/register/", form);
+      await PublicAPI.post("/users/register/", form);
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err: any) {
