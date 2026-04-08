@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PublicAPI } from "./api";
 import { useNavigate, Link } from "react-router-dom";
-import kadiImage from "./assets/kadi.jpeg";
+import kadiImage from "./assets/newkadi.jpeg";
 import flagIcon from "./assets/flag.png";
 
 export default function Login() {
@@ -37,8 +37,16 @@ export default function Login() {
   };
 
   return (
-    <div className="page">
-      <div className="card">
+    <div
+      className="page login-page"
+      style={{
+        background: `linear-gradient(140deg, rgba(250, 255, 250, 0.94), rgba(217, 249, 223, 0.92)), url(${kadiImage}) center/cover no-repeat`,
+        backgroundBlendMode: "overlay",
+        backgroundAttachment: "fixed",
+        animation: "bgPulse 18s ease-in-out infinite",
+      }}
+    >
+      <div className="card login-card">
 
         {/* kadi.jpeg covering the top of the card */}
         <div style={{
@@ -54,7 +62,7 @@ export default function Login() {
             <div className="brand-icon" style={{ background: "none", padding: 0, overflow: "visible" }}>
               <img src={flagIcon} alt="flag" style={{ width: "36px", height: "36px", objectFit: "contain", animation: "wave 1.5s ease-in-out infinite", transformOrigin: "left center" }} />
             </div>
-            <span className="brand-name">NikoKadi</span>
+            <span className="brand-name">CivicReach</span>
           </div>
         </div>
 

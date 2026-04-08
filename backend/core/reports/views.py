@@ -16,6 +16,21 @@ class CreateReportView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+class MyReportsView(generics.ListAPIView):
+    serializer_class = ReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(user=self.request.user).order_by('-created_at')
+
+class UpdateReportFeedbackView(generics.UpdateAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(user=self.request.user)
+
 class DashboardView(APIView):
     permission_classes = [IsAdminUser]
 
