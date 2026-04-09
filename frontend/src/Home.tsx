@@ -7,8 +7,9 @@ import "./Home.css";
 
 export default function Home() {
   const [reports, setReports] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"home" | "report" | "verify">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "report" | "verify" | "heatmap">("home");
   const [voterStatus, setVoterStatus] = useState<"yes" | "no" | "unsure" | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [form, setForm] = useState({
     location_name: "", county: "", subcounty: "", division: "",
     location: "", sublocation: "", ward: "", latitude: "", longitude: "", message: "",
@@ -18,14 +19,26 @@ export default function Home() {
   const [contactError, setContactError] = useState("");
   const [contactSuccess, setContactSuccess] = useState("");
   const [contactMessage, setContactMessage] = useState("");
-  const [attendanceFeedback, setAttendanceFeedback] = useState<Record<number, string>>({});
+  const [attendanceFeedback, setAttendanceFeedback] = useState<Record<number, string>>({}); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const navigate = useNavigate();
-  const phone = localStorage.getItem("phone") || "User";
 
   useEffect(() => {
-    API.get("/reports/my-reports/").then(r => setReports(r.data)).catch(() => setReports([]));
+    const fetchData = async () => {
+      try {
+        const [reportsRes, profileRes] = await Promise.all([
+          API.get("/reports/my-reports/"),
+          API.get("/users/profile/")
+        ]);
+        setReports(reportsRes.data);
+        setUserProfile(profileRes.data);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setReports([]);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleLogout = () => { localStorage.clear(); navigate("/login"); };
@@ -68,7 +81,7 @@ export default function Home() {
     setContactMessage("");
   };
 
-  const submitFeedback = async (reportId: number, status: string) => {
+  const submitFeedback = async (reportId: number, status: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     setError("");
     setSuccess("");
     try {
@@ -90,9 +103,15 @@ export default function Home() {
           <span className="home-brand-name">CivicReach</span>
         </div>
         <div className="home-nav-tabs">
-          {(["home", "report", "verify"] as const).map(tab => (
-            <button key={tab} className={`home-tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
-              {tab === "home" ? "Home" : tab === "report" ? "Report" : "Voter Status"}
+          {(["home", "report", "verify", "heatmap"] as const).map(tab => (
+            <button key={tab} className={`home-tab ${activeTab === tab ? "active" : ""}`} onClick={() => {
+              if (tab === "heatmap") {
+                navigate("/heatmap");
+              } else {
+                setActiveTab(tab);
+              }
+            }}>
+              {tab === "home" ? "Home" : tab === "report" ? "Report" : tab === "verify" ? "Voter Status" : "🔥 Heatmap"}
             </button>
           ))}
         </div>
@@ -105,8 +124,8 @@ export default function Home() {
           <>
             <div className="welcome-banner">
               <div className="welcome-text">
-                <h2>Welcome back {phone}</h2>
-                <p>Logged in as {phone}</p>
+                <h2>Welcome back {userProfile?.full_name || userProfile?.phone || "User"}</h2>
+                <p>Logged in as {userProfile?.admin ? "Admin" : userProfile?.user || "User"}</p>
               </div>
               <div className="welcome-emoji">🛡️</div>
             </div>
@@ -147,8 +166,8 @@ export default function Home() {
                 </button>
               </form>
               <div className="contact-details" style={{ marginTop: "1rem", color: "rgba(255,255,255,0.55)", fontSize: "0.92rem" }}>
-                <p>Admin email: <a href="mailto:admin@nikokadi.co.ke">admin@nikokadi.co.ke</a></p>
-                <p>Admin phone: <a href="tel:+254700000000">+254 700 000 000</a></p>
+                <p>Admin email: <a href="mailto:joachimnevilleodhiambo@gmail.com">joachimnevilleodhiambo@gmail.com</a></p>
+                <p>Admin phone: <a href="tel:+254716306489">+254 716 306 489</a></p>
               </div>
             </div>
 
@@ -269,6 +288,41 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Footer with accessibility information */}
+      <footer className="home-footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h4>CivicReach</h4>
+            <p>Empowering communities through transparent reporting and civic engagement.</p>
+          </div>
+          <div className="footer-section">
+            <h4>Accessibility</h4>
+            <p>
+              We are committed to making our platform accessible to everyone.
+              Use the accessibility widget (♿) in the bottom-right corner to adjust your experience.
+            </p>
+            <a href="/accessibility-policy" className="footer-link">
+              View Accessibility Policy
+            </a>
+          </div>
+          <div className="footer-section">
+            <h4>Contact</h4>
+            <p>
+              Email: <a href="mailto:joachimnevilleodhiambo@gmail.com">joachimnevilleodhiambo@gmail.com</a><br />
+              Phone: <a href="tel:+254716306489">+254 716 306 489</a>
+            </p>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2026 CivicReach. All rights reserved.</p>
+          <div className="footer-links">
+            <a href="/accessibility-policy">Accessibility</a>
+            <span aria-hidden="true">|</span>
+            <a href="mailto:joachimnevilleodhiambo@gmail.com">Contact</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

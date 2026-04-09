@@ -24,6 +24,7 @@ export default function Report() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     navigate("/login");
   };
 
@@ -56,16 +57,53 @@ export default function Report() {
     setError("");
     setSuccess("");
     setLoading(true);
+
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Session expired. Please login again.");
+      setLoading(false);
+      navigate("/login");
+      return;
+    }
+
+    // Validate required fields
+    if (!form.latitude || !form.longitude) {
+      setError("Latitude and longitude are required. Please use 'Get My Location' or enter manually.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
-      await API.post("/reports/create/", form, {
-        headers: { Authorization: `Bearer ${token}` },
+      await API.post("/reports/create/", {
+        location_name: form.location_name,
+        county: form.county,
+        subcounty: form.subcounty,
+        division: form.division,
+        location: form.location,
+        sublocation: form.sublocation,
+        latitude: parseFloat(form.latitude),
+        longitude: parseFloat(form.longitude),
+        message: form.message,
       });
       setSuccess("Report submitted successfully!");
-      setForm({ location_name: "", county: "", subcounty: "", division: "", location: "", sublocation: "", latitude: "", longitude: "", message: "" });
-    } catch (err) {
-      console.error(err);
-      setError("Failed to submit report. Please try again.");
+      setForm({
+        location_name: "",
+        county: "",
+        subcounty: "",
+        division: "",
+        location: "",
+        sublocation: "",
+        latitude: "",
+        longitude: "",
+        message: "",
+      });
+      // Redirect to home after 2 seconds
+      setTimeout(() => navigate("/home"), 2000);
+    } catch (err: any) {
+      console.error("Error response:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || "Failed to submit report. Please check all fields are filled correctly.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -223,7 +261,7 @@ export default function Report() {
                 disabled={locating}
                 style={{ width: "auto", padding: "0.75rem 1.2rem", marginTop: 0 }}
               >
-                {locating ? "Locating..." : "📍 Get My Location"}
+                {locating ? "Locating..." : "Get My Location"}
               </button>
             </div>
 
@@ -241,7 +279,7 @@ export default function Report() {
             </div>
 
             <button className="btn" type="submit" disabled={loading}>
-              {loading ? "Submitting..." : "🚨 Submit Report"}
+              {loading ? "Submitting..." : "Submit Report"}
             </button>
           </form>
         </div>

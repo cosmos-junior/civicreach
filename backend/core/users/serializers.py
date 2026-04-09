@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import User
+from .models import User, ContactMessage
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['phone', 'id_number', 'password']
+        fields = ['phone', 'id_number', 'full_name', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -15,7 +15,24 @@ class RegisterSerializer(serializers.ModelSerializer):
             id_number=validated_data['id_number'],
             password=validated_data['password']
         )
+        # Update full_name after creation since create_user doesn't handle it
+        user.full_name = validated_data.get('full_name', '')
+        user.save()
         return user
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['phone', 'id_number', 'full_name', 'created_at']
+        read_only_fields = ['phone', 'id_number', 'created_at']
+
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+
+    class Meta:
+        model = ContactMessage
+        fields = ['id', 'user_phone', 'message', 'created_at']
 
 
 class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
