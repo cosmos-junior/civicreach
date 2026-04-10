@@ -95,7 +95,8 @@ export default function Register() {
 
           <header>
             <h1>Create account</h1>
-            <p className="register-subtitle">Register to start reporting incidents</p>
+            <p className="register-subtitle">Passionate about Democracy?Register and start reporting areas with low voter registration</p>
+            <p className="register-subtitle">Je Uko kadi?</p>
           </header>
 
           {/* Screen reader announcements */}
@@ -114,7 +115,7 @@ export default function Register() {
               aria-live="assertive"
               tabIndex={-1}
             >
-              <span aria-hidden="true">⚠️</span>
+              <span aria-hidden="true"></span>
               {error}
             </div>
           )}
@@ -127,7 +128,7 @@ export default function Register() {
               aria-live="polite"
               tabIndex={-1}
             >
-              <span aria-hidden="true">✅</span>
+              <span aria-hidden="true"></span>
               {success}
             </div>
           )}
@@ -195,7 +196,7 @@ export default function Register() {
             <div className="register-form-group">
               <label htmlFor="password-input">Password</label>
               <div className="register-input-wrapper">
-                <span className="register-input-icon" aria-hidden="true">🔒</span>
+                <span className="register-input-icon" aria-hidden="true"></span>
                 <input
                   id="password-input"
                   type="password"
