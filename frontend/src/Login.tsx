@@ -3,6 +3,7 @@ import { PublicAPI } from "./api";
 import { useNavigate, Link } from "react-router-dom";
 import kadiImage from "./assets/newkadi.jpeg";
 import flagIcon from "./assets/flag.png";
+import fingerBg from "./assets/fingerbg.jpg";
 
 export default function Login() {
   const [form, setForm] = useState({ phone: "", password: "" });
@@ -85,67 +86,33 @@ export default function Login() {
   return (
     <div
       className="page login-page"
-      style={{
-        background: `linear-gradient(140deg, rgba(250, 255, 250, 0.94), rgba(217, 249, 223, 0.92)), url(${kadiImage}) center/cover no-repeat`,
-        backgroundBlendMode: "overlay",
-        backgroundAttachment: "fixed",
-        animation: "bgPulse 18s ease-in-out infinite",
-      }}
       role="main"
       aria-label="Login page"
+      style={{
+        backgroundImage: `url(${fingerBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
     >
       <div className="card login-card" role="region" aria-label="Login form">
-        {/* kadi.jpeg covering the top of the card */}
-        <div
-          style={{
-            margin: "-2.5rem -2.5rem 1.5rem -2.5rem",
-            height: "160px",
-            borderRadius: "24px 24px 0 0",
-            overflow: "hidden",
-            position: "relative",
-          }}
-          role="img"
-          aria-label="CivicReach branding background"
-        >
+        {/* Hero image covering the top */}
+        <div className="login-hero-img">
           <img
             src={kadiImage}
             alt="CivicReach - Empowering Community Reporting"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(10,31,18,0.9))"
-            }}
-            aria-hidden="true"
-          />
-          <div
-            className="brand"
-            style={{
-              position: "absolute",
-              bottom: "1rem",
-              left: "1.5rem",
-              marginBottom: 0
-            }}
-          >
+          <div className="overlay" aria-hidden="true" />
+          <div className="brand">
             <div
               className="brand-icon"
-              style={{
-                background: "none",
-                padding: 0,
-                overflow: "visible"
-              }}
               role="img"
               aria-label="Kenya flag icon"
             >
               <img
                 src={flagIcon}
-                alt="Kenya flag - Symbol of national pride"
+                alt=""
                 style={{
-                  width: "36px",
-                  height: "36px",
-                  objectFit: "contain",
                   animation: "wave 1.5s ease-in-out infinite",
                   transformOrigin: "left center"
                 }}
@@ -190,22 +157,17 @@ export default function Login() {
               <span aria-hidden="true">🎉</span>
               Logged in as Admin
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               <button
-                className="btn"
+                className="btn btn-primary btn-full"
                 onClick={() => navigate("/dashboard")}
                 aria-label="Go to admin dashboard"
               >
                 📊 View Dashboard
               </button>
               <button
-                className="btn"
+                className="btn btn-ghost btn-full"
                 onClick={() => navigate("/report")}
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  boxShadow: "none",
-                  border: "1px solid rgba(255,255,255,0.12)"
-                }}
                 aria-label="Submit a new incident report"
               >
                 📝 Submit Report
@@ -255,7 +217,7 @@ export default function Login() {
             </div>
 
             <button
-              className="btn"
+              className="btn btn-primary btn-full"
               type="submit"
               disabled={loading}
               aria-describedby={loading ? "loading-status" : undefined}

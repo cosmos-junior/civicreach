@@ -3,6 +3,8 @@ import { API } from "./api";
 import { useNavigate } from "react-router-dom";
 import flagIcon from "./assets/flag.png";
 import mapIcon from "./assets/map.png";
+import voteBg from "./assets/votebg.jpg";
+import ddayImg from "./assets/dday.jpg";
 import "./Home.css";
 
 export default function Home() {
@@ -12,7 +14,8 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [form, setForm] = useState({
     location_name: "", county: "", subcounty: "", division: "",
-    location: "", sublocation: "", ward: "", latitude: "", longitude: "", message: "",
+    location: "", sublocation: "", ward: "", latitude: "", longitude: "",
+    incident_type: "low_registration", message: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -31,7 +34,8 @@ export default function Home() {
           API.get("/reports/my-reports/"),
           API.get("/users/profile/")
         ]);
-        setReports(reportsRes.data);
+        // Handle both paginated {results:[]} and plain array responses
+        setReports(reportsRes.data?.results ?? reportsRes.data ?? []);
         setUserProfile(profileRes.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -41,7 +45,14 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleLogout = () => { localStorage.clear(); navigate("/login"); };
+  const handleLogout = () => {
+    // ✅ Only clear auth keys — preserve accessibility preferences
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("phone");
+    navigate("/login");
+  };
 
   const getLocation = () => {
     if (!navigator.geolocation) { setError("Geolocation not supported."); return; }
@@ -58,14 +69,18 @@ export default function Home() {
   const submitReport = async (e: React.FormEvent) => {
     e.preventDefault(); setError(""); setSuccess(""); setLoading(true);
     try {
-      await API.post("/reports/create/", form);
+      await API.post("/reports/create/", {
+        ...form,
+        latitude: parseFloat(form.latitude),
+        longitude: parseFloat(form.longitude),
+      });
       setSuccess("Report submitted successfully!");
-      setForm({ location_name: "", county: "", subcounty: "", division: "", location: "", sublocation: "", ward: "", latitude: "", longitude: "", message: "" });
-    } catch { setError("Failed to submit report."); }
+      setForm({ location_name: "", county: "", subcounty: "", division: "", location: "", sublocation: "", ward: "", latitude: "", longitude: "", incident_type: "low_registration", message: "" });
+    } catch { setError("Failed to submit report. Check all fields."); }
     finally { setLoading(false); }
   };
 
-  const contactAdmin = (e: React.FormEvent) => {
+  const contactAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setContactError("");
     setContactSuccess("");
@@ -73,12 +88,14 @@ export default function Home() {
       setContactError("Please enter a message for the admin.");
       return;
     }
-
-    const adminEmail = "admin@nikokadi.co.ke";
-    const mailto = `mailto:${adminEmail}?subject=${encodeURIComponent("NikoKadi Admin Contact")}&body=${encodeURIComponent(contactMessage)}`;
-    window.location.href = mailto;
-    setContactSuccess("Opening your email app so you can send this message to admin.");
-    setContactMessage("");
+    try {
+      // ✅ Fixed: use the API endpoint instead of unreliable mailto:
+      await API.post("/users/contact/", { message: contactMessage });
+      setContactSuccess("Message sent to admin successfully!");
+      setContactMessage("");
+    } catch {
+      setContactError("Failed to send message. Please try again.");
+    }
   };
 
   const submitFeedback = async (reportId: number, status: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -96,7 +113,15 @@ export default function Home() {
   const mapImg = <img src={mapIcon} alt="map" style={{ width: "16px", height: "16px", objectFit: "contain" }} />;
 
   return (
-    <div className="home-bg">
+    <div
+      className="home-bg"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(5,10,20,0.85) 0%, rgba(5,10,20,0.7) 40%, rgba(5,10,20,0.92) 100%), url(${voteBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <nav className="home-nav">
         <div className="home-brand">
           <img src={flagIcon} alt="flag" style={{ width: "32px", height: "32px", objectFit: "contain", animation: "wave 1.5s ease-in-out infinite", transformOrigin: "left center" }} />
@@ -122,10 +147,19 @@ export default function Home() {
 
         {activeTab === "home" && (
           <>
-            <div className="welcome-banner">
+            <div
+              className="welcome-banner"
+              style={{
+                backgroundImage: `linear-gradient(135deg, rgba(5,10,20,0.72) 0%, rgba(5,20,12,0.65) 100%), url(${ddayImg})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center 30%",
+                borderRadius: "var(--radius-xl)",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
+            >
               <div className="welcome-text">
-                <h2>Welcome back {userProfile?.full_name || userProfile?.phone || "User"}</h2>
-                <p>Logged in as {userProfile?.admin ? "Admin" : userProfile?.user || "User"}</p>
+                <h2>Welcome back, {userProfile?.full_name || userProfile?.phone || "Citizen"} 👋</h2>
+                <p>Logged in as <strong>{userProfile?.admin ? "Admin" : "Citizen Reporter"}</strong></p>
               </div>
               <div className="welcome-emoji">🛡️</div>
             </div>
@@ -220,6 +254,25 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+              {/* Incident type selector */}
+              <div className="form-group" style={{ marginBottom: 0, gridColumn: "1 / -1" }}>
+                <label>Incident Type</label>
+                <div className="input-wrapper">
+                  <span className="input-icon">⚠️</span>
+                  <select
+                    value={form.incident_type}
+                    onChange={e => setForm({ ...form, incident_type: e.target.value })}
+                    required
+                    style={{ background: "transparent", border: "none", color: "inherit", width: "100%", fontFamily: "var(--font-family)" }}
+                  >
+                    <option value="low_registration">Low Voter Registration</option>
+                    <option value="intimidation">Voter Intimidation</option>
+                    <option value="violence">Violence / Disruption</option>
+                    <option value="bribery">Vote Buying / Bribery</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end", margin: "1rem 0" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>

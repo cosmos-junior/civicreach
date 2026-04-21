@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { PublicAPI } from "./api";
 import { useNavigate, Link } from "react-router-dom";
 import newkadiImage from "./assets/newkadi.jpeg";
+import regBg from "./assets/regbg.jpg";
 
 export default function Register() {
   const [form, setForm] = useState({ full_name: "", phone: "", id_number: "", password: "" });
@@ -75,8 +76,9 @@ export default function Register() {
     <div
       className="register-page"
       style={{
-        background: `linear-gradient(135deg, rgba(15, 15, 35, 0.85), rgba(26, 26, 46, 0.75), rgba(22, 33, 62, 0.8), rgba(15, 15, 35, 0.85), rgba(26, 26, 46, 0.75)), url(${newkadiImage}) center/cover no-repeat`,
-        backgroundBlendMode: "overlay",
+        backgroundImage: `linear-gradient(135deg, rgba(5, 8, 18, 0.88) 0%, rgba(10, 20, 12, 0.82) 60%, rgba(5, 8, 18, 0.9) 100%), url(${regBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
         backgroundAttachment: "fixed",
       }}
       role="main"
@@ -95,8 +97,8 @@ export default function Register() {
 
           <header>
             <h1>Create account</h1>
-            <p className="register-subtitle">Passionate about Democracy?Register and start reporting areas with low voter registration</p>
-            <p className="register-subtitle">Je Uko kadi?</p>
+            <p className="register-subtitle">Passionate about Democracy? Register and start reporting areas with low voter registration</p>
+            <p className="register-subtitle" style={{ fontStyle: "italic", color: "var(--color-amber-400)" }}>Je Uko kadi?</p>
           </header>
 
           {/* Screen reader announcements */}
@@ -115,7 +117,7 @@ export default function Register() {
               aria-live="assertive"
               tabIndex={-1}
             >
-              <span aria-hidden="true"></span>
+              <span aria-hidden="true">⚠️</span>
               {error}
             </div>
           )}
@@ -128,7 +130,7 @@ export default function Register() {
               aria-live="polite"
               tabIndex={-1}
             >
-              <span aria-hidden="true"></span>
+              <span aria-hidden="true">✅</span>
               {success}
             </div>
           )}
@@ -196,7 +198,7 @@ export default function Register() {
             <div className="register-form-group">
               <label htmlFor="password-input">Password</label>
               <div className="register-input-wrapper">
-                <span className="register-input-icon" aria-hidden="true"></span>
+                <span className="register-input-icon" aria-hidden="true">🔒</span>
                 <input
                   id="password-input"
                   type="password"

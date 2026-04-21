@@ -3,6 +3,7 @@ import { API } from "./api";
 import { useNavigate } from "react-router-dom";
 import mapIcon from "./assets/map.png";
 import flagIcon from "./assets/flag.png";
+import regBg from "./assets/regbg.jpg";
 
 export default function Report() {
   const [form, setForm] = useState({
@@ -14,6 +15,7 @@ export default function Report() {
     sublocation: "",
     latitude: "",
     longitude: "",
+    incident_type: "low_registration",
     message: "",
   });
   const [error, setError] = useState("");
@@ -25,6 +27,8 @@ export default function Report() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("phone");
     navigate("/login");
   };
 
@@ -96,6 +100,7 @@ export default function Report() {
         sublocation: "",
         latitude: "",
         longitude: "",
+        incident_type: "low_registration",
         message: "",
       });
       // Redirect to home after 2 seconds
@@ -109,29 +114,49 @@ export default function Report() {
     }
   };
 
-  const mapImg = <img src={mapIcon} alt="map" style={{ width: "18px", height: "18px", objectFit: "contain" }} />;
+  const mapImg = <img src={mapIcon} alt="" style={{ width: "16px", height: "16px", objectFit: "contain" }} />;
 
   return (
     <>
-      <nav className="navbar" style={{ backgroundImage: "url('/kadi.jpeg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+      <nav className="navbar">
         <div className="brand">
-          <div className="brand-icon" style={{ background: "none", padding: 0, overflow: "visible" }}>
-            <img src={flagIcon} alt="flag" style={{ width: "36px", height: "36px", objectFit: "contain", animation: "wave 1.5s ease-in-out infinite", transformOrigin: "left center" }} />
+          <div className="brand-icon">
+            <img
+              src={flagIcon}
+              alt="Kenya flag"
+              style={{ animation: "wave 1.5s ease-in-out infinite", transformOrigin: "left center" }}
+            />
           </div>
-          <span className="brand-name">NikoKadi</span>
+          <span className="brand-name">CivicReach</span>
         </div>
         <div className="nav-links">
+          <button
+            className="nav-btn"
+            onClick={() => navigate("/home")}
+          >
+            ← Back to Home
+          </button>
           <button className="nav-btn btn-danger" onClick={handleLogout}>Sign Out</button>
         </div>
       </nav>
 
-      <div className="page" style={{ paddingTop: "5rem" }}>
+      <div
+        className="page"
+        style={{
+          paddingTop: "5.5rem",
+          backgroundImage: `linear-gradient(to bottom, rgba(5,10,20,0.88) 0%, rgba(5,15,10,0.82) 100%), url(${regBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          minHeight: "100vh",
+        }}
+      >
         <div className="card card-wide">
-          <h2>Report Incident</h2>
+          <h2 style={{ marginBottom: "0.25rem" }}>Report Incident</h2>
           <p className="subtitle">Provide details about the location and the status report</p>
 
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+          {error && <div className="alert alert-error"><span aria-hidden="true">⚠️</span> {error}</div>}
+          {success && <div className="alert alert-success"><span aria-hidden="true">✅</span> {success}</div>}
 
           <form onSubmit={submitReport}>
 
@@ -191,7 +216,7 @@ export default function Report() {
                   />
                 </div>
               </div>
-                  {/*Text input for location*/ } 
+
               <div className="form-group">
                 <label>Location</label>
                 <div className="input-wrapper">
@@ -205,8 +230,6 @@ export default function Report() {
                   />
                 </div>
               </div>
-
-              {/*Text input for sub-location*/}
 
               <div className="form-group">
                 <label>Sub-Location</label>
@@ -223,7 +246,26 @@ export default function Report() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end", marginBottom: "1.2rem" }}>
+            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+              <label>Incident Type</label>
+              <div className="input-wrapper">
+                <span className="input-icon">⚠️</span>
+                <select
+                  value={form.incident_type}
+                  onChange={e => setForm({ ...form, incident_type: e.target.value })}
+                  required
+                  style={{ background: "transparent", border: "none", color: "inherit", width: "100%", fontFamily: "var(--font-family)" }}
+                >
+                  <option value="low_registration">Low Voter Registration</option>
+                  <option value="intimidation">Voter Intimidation</option>
+                  <option value="violence">Violence / Disruption</option>
+                  <option value="bribery">Vote Buying / Bribery</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end", margin: "1rem 0" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Latitude</label>
@@ -256,19 +298,19 @@ export default function Report() {
               </div>
               <button
                 type="button"
-                className="btn"
+                className="btn btn-cta"
                 onClick={getLocation}
                 disabled={locating}
-                style={{ width: "auto", padding: "0.75rem 1.2rem", marginTop: 0 }}
+                style={{ whiteSpace: "nowrap" }}
               >
-                {locating ? "Locating..." : "Get My Location"}
+                {locating ? "Locating..." : "📍 Get My Location"}
               </button>
             </div>
 
             <div className="form-group">
               <label>Incident Description</label>
-              <div className="input-wrapper">
-                <span className="input-icon" style={{ top: "1.1rem", transform: "none" }}>📝</span>
+              <div className="input-wrapper" style={{ alignItems: "flex-start" }}>
+                <span className="input-icon" style={{ marginTop: "0.2rem" }}>📝</span>
                 <textarea
                   placeholder="Describe what happened in detail..."
                   value={form.message}
@@ -278,7 +320,7 @@ export default function Report() {
               </div>
             </div>
 
-            <button className="btn" type="submit" disabled={loading}>
+            <button className="btn btn-primary btn-full btn-lg" type="submit" disabled={loading}>
               {loading ? "Submitting..." : "Submit Report"}
             </button>
           </form>

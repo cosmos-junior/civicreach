@@ -1,7 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosRequestHeaders, InternalAxiosRequestConfig } from "axios";
 
-const BASE = "http://127.0.0.1:8000/api";
+const BASE = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/api";
 const REFRESH_ENDPOINT = "/token/refresh/";
+
+const isDev = process.env.NODE_ENV === "development";
 
 const getAccessToken = () => localStorage.getItem("token");
 const getRefreshToken = () => localStorage.getItem("refreshToken");
@@ -11,6 +13,7 @@ const clearAuthStorage = () => {
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("isAdmin");
   localStorage.removeItem("phone");
+  // NOTE: Accessibility preferences are intentionally preserved across logout
 };
 
 export const API = axios.create({
@@ -35,9 +38,9 @@ API.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) {
     (config.headers as AxiosRequestHeaders).Authorization = `Bearer ${token}`;
-    console.debug("✓ Token attached to request:", config.url);
+    if (isDev) console.debug("✓ Token attached to request:", config.url);
   } else {
-    console.warn("⚠ No token found in localStorage for:", config.url);
+    if (isDev) console.warn("⚠ No token found for:", config.url);
   }
 
   return config;
@@ -104,3 +107,4 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
